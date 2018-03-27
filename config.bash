@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-
-country_code="ZA"
-locality="Cape Town"
-state="Western Cape"
-company="ACME"
-common_name="acme.com"
+OUT_PATH=/tmp
+COUNTRY_CODE="ZA"
+LOCALITY="Cape Town"
+STATE="Western Cape"
+COMPANY="ACME"
+COMMON_NAME="acme.com"

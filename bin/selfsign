@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-source ./config.bash
+SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+source ${SCRIPT_PATH}/../config.bash
 
 if [ $# -ne 1 ]; then
   echo 'Usage: ./selfsign <domain>';
@@ -7,24 +8,37 @@ if [ $# -ne 1 ]; then
 fi
 
 # Generate a RSA private key to sign the certificate with
-openssl genrsa -out /tmp/$1.key 1024
+echo "⦿ Generating RSA private key"
+openssl genrsa \
+  -out ${OUT_PATH}/$1.key \
+  512 \
+    > /dev/null 2>&1
 
-# Generate a certificate signing request
-openssl req -new -key /tmp/$1.key -out /tmp/$1.csr -subj "/C=${country_code}/ST=${state}/L=${locality}/O=${company}/CN=${common_name}"
+echo "⦿ Generating Certificate Signing Request";
+openssl req \
+  -new \
+  -key ${OUT_PATH}/$1.key \
+  -out ${OUT_PATH}/$1.csr \
+  -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O=${COMPANY}/CN=${COMMON_NAME}" \
+    > /dev/null 2>&1
 
 # Generate certificate
+echo "⦿ Generating certificate"
 openssl req \
   -newkey rsa:2048 \
   -x509 \
   -nodes \
-  -keyout /tmp/$1.key \
+  -keyout ${OUT_PATH}/$1.key \
   -new \
-  -out /tmp/$1.cer \
-  -subj "/C=${country_code}/ST=${state}/L=${locality}/O={company}/CN=${common_name}" \
+  -out ${OUT_PATH}/$1.cer \
+  -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O={COMPANY}/CN=${COMMON_NAME}" \
   -reqexts SAN \
   -extensions SAN \
   -config \
     <(cat /etc/ssl/openssl.cnf \
-    <(printf "[SAN]\nsubjectAltName=DNS:${common_name} ")) \
+    <(printf "[SAN]\nsubjectAltName=DNS:${COMMON_NAME} ")) \
   -sha256 \
-  -days 365
+  -days 365 \
+    > /dev/null 2>&1
+
+echo "Done!"
