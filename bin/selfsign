@@ -2,19 +2,31 @@
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 source ${SCRIPT_PATH}/../config.bash
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+WHITE='\033[0;97m'
+NC='\033[0m'
+
 if [ $# -ne 1 ]; then
   echo 'Usage: ./selfsign <domain>';
   exit 0;
 fi
 
 # Generate a RSA private key to sign the certificate with
-echo "⦿ Generating RSA private key"
+echo -ne "${WHITE}⦿${NC} Generating RSA private key "
 openssl genrsa \
   -out ${OUT_PATH}/$1.key \
-  512 \
+  1024 \
     > /dev/null 2>&1
 
-echo "⦿ Generating Certificate Signing Request";
+if [ ! -f "$OUT_PATH/$1.key" ]; then
+  echo -e "${RED}✗${NC}"
+  exit 1
+else
+  echo -e "${GREEN}✓${NC}"
+fi
+
+echo -ne "${WHITE}⦿${NC} Generating Certificate Signing Request ";
 openssl req \
   -new \
   -key ${OUT_PATH}/$1.key \
@@ -22,8 +34,15 @@ openssl req \
   -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O=${COMPANY}/CN=${COMMON_NAME}" \
     > /dev/null 2>&1
 
+if [ ! -f "$OUT_PATH/$1.csr" ]; then
+  echo -e "${RED}✗${NC}"
+  exit 1
+else
+  echo -e "${GREEN}✓${NC}"
+fi
+
 # Generate certificate
-echo "⦿ Generating certificate"
+echo -ne "${WHITE}⦿${NC} Generating certificate "
 openssl req \
   -newkey rsa:2048 \
   -x509 \
@@ -41,4 +60,12 @@ openssl req \
   -days 365 \
     > /dev/null 2>&1
 
-echo "Done!"
+if [ ! -f "$OUT_PATH/$1.cer" ]; then
+  echo -e "${RED}✗${NC}"
+  exit 1
+else
+  echo -e "${GREEN}✓${NC}"
+fi
+
+echo "Done, cheers!"
+echo "🍻"
