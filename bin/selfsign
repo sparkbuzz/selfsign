@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
-source ${SCRIPT_PATH}/../config.bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-WHITE='\033[0;97m'
-NC='\033[0m'
+source ${SCRIPT_PATH}/../config/color.sh
+source ${SCRIPT_PATH}/../config/ssl.sh
 
 if [ $# -ne 1 ]; then
-  echo 'Usage: ./selfsign <domain>';
+  echo 'Usage: ./selfsign <common_name>';
   exit 0;
 fi
+
+COMMON_NAME="${1}.localhost"
+OUT_PATH=${PWD}
 
 # Generate a RSA private key to sign the certificate with
 echo -ne "${WHITE}⦿${NC} Generating RSA private key "
@@ -50,7 +50,7 @@ openssl req \
   -keyout ${OUT_PATH}/$1.key \
   -new \
   -out ${OUT_PATH}/$1.cer \
-  -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O={COMPANY}/CN=${COMMON_NAME}" \
+  -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O=${COMPANY}/CN=${COMMON_NAME}" \
   -reqexts SAN \
   -extensions SAN \
   -config \
