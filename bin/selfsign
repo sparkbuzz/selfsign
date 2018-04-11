@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # Resolve path to the this script, even if executed via a symlink
 if [[ uname -eq 'Darwin' ]]; then
