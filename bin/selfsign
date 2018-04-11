@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+
+# Resolve path to the this script, even if executed via a symlink
+if [[ uname -eq 'Darwin' ]]; then
+  SCRIPT_PATH="$(dirname "$(readlink "$0")")" # MacOS
+else
+  SCRIPT_PATH="$(dirname "$(readlink -f "$0")")" # Linux etc.
+fi
 
 source ${SCRIPT_PATH}/../config/color.sh
 source ${SCRIPT_PATH}/../config/ssl.sh
