@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Resolve path to the this script, even if executed via a symlink
-if [[ uname -eq 'Darwin' ]]; then
+if [ $(uname) = 'Darwin' ]; then
   SCRIPT_PATH="$(dirname "$(readlink "$0")")" # MacOS
 else
   SCRIPT_PATH="$(dirname "$(readlink -f "$0")")" # Linux etc.
