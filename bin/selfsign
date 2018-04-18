@@ -9,6 +9,7 @@ fi
 
 source ${SCRIPT_PATH}/../config/color.sh
 source ${SCRIPT_PATH}/../config/ssl.sh
+source ${SCRIPT_PATH}/../lib/functions.sh
 
 if [ $# -ne 1 ]; then
   echo 'Usage: ./selfsign <common_name>';
@@ -25,13 +26,9 @@ openssl genrsa \
   1024 \
     > /dev/null 2>&1
 
-if [ ! -f "$OUT_PATH/$COMMON_NAME.key" ]; then
-  printf "${RED}✗${NC}\n"
-  exit 1
-else
-  printf "${GREEN}✓${NC}\n"
-fi
+assert_file "$OUT_PATH/$COMMON_NAME.key" ]
 
+# Create CSR request
 printf "${WHITE}⦿${NC} Generating Certificate Signing Request ";
 openssl req \
   -new \
@@ -40,19 +37,14 @@ openssl req \
   -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O=${COMPANY}/CN=${COMMON_NAME}" \
     > /dev/null 2>&1
 
-if [ ! -f "$OUT_PATH/$COMMON_NAME.csr" ]; then
-  printf "${RED}✗${NC}\n"
-  exit 1
-else
-  printf "${GREEN}✓${NC}\n"
-fi
+assert_file "$OUT_PATH/$COMMON_NAME.csr"
 
 # Create temp file with configuration
 TMP_OPENSSL_CONFIG=$(mktemp)
 cat /etc/ssl/openssl.cnf > ${TMP_OPENSSL_CONFIG}
 printf "[SAN]\nsubjectAltName=DNS:${COMMON_NAME} " >> ${TMP_OPENSSL_CONFIG}
 
-# Generate certificate
+# Generate the certificate
 printf "${WHITE}⦿${NC} Generating certificate "
 openssl req \
   -newkey rsa:2048 \
@@ -69,19 +61,14 @@ openssl req \
   -days 365 \
     > /dev/null 2>&1
 
+# Remove the temporary config file
 rm ${TMP_OPENSSL_CONFIG}
 
-if [ ! -f "$OUT_PATH/$COMMON_NAME.cer" ]; then
-  printf "${RED}✗${NC}\n"
-  exit 1
-else
-  printf "${GREEN}✓${NC}\n"
-fi
+assert_file "$OUT_PATH/$COMMON_NAME.cer"
+certificate_info ${OUT_PATH}/$COMMON_NAME.cer
 
-chmod 400 $OUT_PATH/$COMMON_NAME.csr $OUT_PATH/$COMMON_NAME.cer $OUT_PATH/$COMMON_NAME.key
-printf "${WHITE}⦿${NC} Updated file permissions \n"
-ls -l $OUT_PATH/$COMMON_NAME.csr $OUT_PATH/$COMMON_NAME.cer $OUT_PATH/$COMMON_NAME.key | \
-  awk -v nc=$NC -v gray=$GRAY '{print gray"  [" $1n "]"nc, $9}'
+# Report file permissions
+list_permissions "$OUT_PATH/$COMMON_NAME.csr $OUT_PATH/$COMMON_NAME.cer $OUT_PATH/$COMMON_NAME.key"
 
-echo "Certificate generated, cheers!"
+echo "Certificate generated!"
 echo "🍻"
