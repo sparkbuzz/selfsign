@@ -19,20 +19,20 @@ COMMON_NAME="${1}.localhost"
 OUT_PATH=${PWD}
 
 # Generate a RSA private key to sign the certificate with
-echo -ne "${WHITE}⦿${NC} Generating RSA private key "
+printf "${WHITE}⦿${NC} Generating RSA private key "
 openssl genrsa \
   -out ${OUT_PATH}/$1.key \
   1024 \
     > /dev/null 2>&1
 
 if [ ! -f "$OUT_PATH/$1.key" ]; then
-  echo -e "${RED}✗${NC}"
+  printf "${RED}✗${NC}\n"
   exit 1
 else
-  echo -e "${GREEN}✓${NC}"
+  printf "${GREEN}✓${NC}\n"
 fi
 
-echo -ne "${WHITE}⦿${NC} Generating Certificate Signing Request ";
+printf "${WHITE}⦿${NC} Generating Certificate Signing Request ";
 openssl req \
   -new \
   -key ${OUT_PATH}/$1.key \
@@ -41,14 +41,19 @@ openssl req \
     > /dev/null 2>&1
 
 if [ ! -f "$OUT_PATH/$1.csr" ]; then
-  echo -e "${RED}✗${NC}"
+  printf "${RED}✗${NC}\n"
   exit 1
 else
-  echo -e "${GREEN}✓${NC}"
+  printf "${GREEN}✓${NC}\n"
 fi
 
+# Create temp file with configuration
+TMP_OPENSSL_CONFIG=$(mktemp)
+cat /etc/ssl/openssl.cnf > ${TMP_OPENSSL_CONFIG}
+printf "[SAN]\nsubjectAltName=DNS:${COMMON_NAME} " >> ${TMP_OPENSSL_CONFIG}
+
 # Generate certificate
-echo -ne "${WHITE}⦿${NC} Generating certificate "
+printf "${WHITE}⦿${NC} Generating certificate "
 openssl req \
   -newkey rsa:2048 \
   -x509 \
@@ -59,19 +64,24 @@ openssl req \
   -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O=${COMPANY}/CN=${COMMON_NAME}" \
   -reqexts SAN \
   -extensions SAN \
-  -config \
-    <(cat /etc/ssl/openssl.cnf \
-    <(printf "[SAN]\nsubjectAltName=DNS:${COMMON_NAME} ")) \
+  -config ${TMP_OPENSSL_CONFIG} \
   -sha256 \
   -days 365 \
     > /dev/null 2>&1
 
+rm ${TMP_OPENSSL_CONFIG}
+
 if [ ! -f "$OUT_PATH/$1.cer" ]; then
-  echo -e "${RED}✗${NC}"
+  printf "${RED}✗${NC}\n"
   exit 1
 else
-  echo -e "${GREEN}✓${NC}"
+  printf "${GREEN}✓${NC}\n"
 fi
 
-echo "Done, cheers!"
+chmod 400 $OUT_PATH/$1.csr $OUT_PATH/$1.cer $OUT_PATH/$1.key
+printf "${WHITE}⦿${NC} Updated file permissions \n"
+ls -l $OUT_PATH/$1.csr $OUT_PATH/$1.cer $OUT_PATH/$1.key | \
+  awk -v nc=$NC -v gray=$GRAY '{print gray"  [" $1n "]"nc, $9}'
+
+echo "Certificate generated, cheers!"
 echo "🍻"
