@@ -28,7 +28,7 @@ on MacOS. Checkout this repository and symlink
 
 To use, change into the folder where you would like to generate the certificate, and run 
 
-`selfsign mysitename`
+`selfsign mysitename.localhost`
 
 This will generate three files in the current path:
   - mysitename.localhost.csr
