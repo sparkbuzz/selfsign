@@ -1,74 +1,27 @@
 #!/usr/bin/env sh
 
-# Resolve path to the this script, even if executed via a symlink
+# Resolve path to this script, even if executed via a symlink
 if [ $(uname) = 'Darwin' ]; then
   SCRIPT_PATH="$(dirname "$(readlink "$0")")" # MacOS
 else
   SCRIPT_PATH="$(dirname "$(readlink -f "$0")")" # Linux etc.
 fi
 
-source ${SCRIPT_PATH}/../config/color.sh
-source ${SCRIPT_PATH}/../config/ssl.sh
-source ${SCRIPT_PATH}/../lib/functions.sh
+source $SCRIPT_PATH/../config/color.sh
+source $SCRIPT_PATH/../config/ssl.sh
+source $SCRIPT_PATH/../lib/functions.sh
 
-if [ $# -ne 1 ]; then
-  echo 'Usage: ./selfsign <common_name>';
-  exit 0;
-fi
+# Show usage info when no arguments are set
+[ $# -ne 1 ] && usage
 
-COMMON_NAME="${1}.localhost"
-OUT_PATH=${PWD}
-
-# Generate a RSA private key to sign the certificate with
-printf "${WHITE}⦿${NC} Generating RSA private key "
-openssl genrsa \
-  -out ${OUT_PATH}/$COMMON_NAME.key \
-  1024 \
-    > /dev/null 2>&1
-
-assert_file "$OUT_PATH/$COMMON_NAME.key" ]
-
-# Create CSR request
-printf "${WHITE}⦿${NC} Generating Certificate Signing Request ";
-openssl req \
-  -new \
-  -key ${OUT_PATH}/$COMMON_NAME.key \
-  -out ${OUT_PATH}/$COMMON_NAME.csr \
-  -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O=${COMPANY}/CN=${COMMON_NAME}" \
-    > /dev/null 2>&1
-
-assert_file "$OUT_PATH/$COMMON_NAME.csr"
-
-# Create temp file with configuration
-TMP_OPENSSL_CONFIG=$(mktemp)
-cat /etc/ssl/openssl.cnf > ${TMP_OPENSSL_CONFIG}
-printf "[SAN]\nsubjectAltName=DNS:${COMMON_NAME} " >> ${TMP_OPENSSL_CONFIG}
+DOMAIN=$1
 
 # Generate the certificate
-printf "${WHITE}⦿${NC} Generating certificate "
-openssl req \
-  -newkey rsa:2048 \
-  -x509 \
-  -nodes \
-  -keyout ${OUT_PATH}/$COMMON_NAME.key \
-  -new \
-  -out ${OUT_PATH}/$COMMON_NAME.cer \
-  -subj "/C=${COUNTRY_CODE}/ST=${STATE}/L=${LOCALITY}/O=${COMPANY}/CN=${COMMON_NAME}" \
-  -reqexts SAN \
-  -extensions SAN \
-  -config ${TMP_OPENSSL_CONFIG} \
-  -sha256 \
-  -days 365 \
-    > /dev/null 2>&1
-
-# Remove the temporary config file
-rm ${TMP_OPENSSL_CONFIG}
-
-assert_file "$OUT_PATH/$COMMON_NAME.cer"
-certificate_info ${OUT_PATH}/$COMMON_NAME.cer
-
-# Report file permissions
-list_permissions "$OUT_PATH/$COMMON_NAME.csr $OUT_PATH/$COMMON_NAME.cer $OUT_PATH/$COMMON_NAME.key"
+generate_rsa_key $PWD $DOMAIN
+generate_csr $PWD $DOMAIN
+generate_certificate $PWD $DOMAIN
+certificate_info $PWD/$DOMAIN.cer
+list_permissions "$PWD/$DOMAIN.csr $PWD/$DOMAIN.cer $PWD/$DOMAIN.key"
 
 echo "Certificate generated!"
 echo "🍻"
