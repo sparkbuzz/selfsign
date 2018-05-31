@@ -16,12 +16,15 @@ source $SCRIPT_PATH/../lib/functions.sh
 
 DOMAIN=$1
 
-# Generate the certificate
+mkdir -p "${PWD}/${DOMAIN}"
+
+# Generate RSA key -> CSR -> Certificate
 generate_rsa_key $PWD $DOMAIN
 generate_csr $PWD $DOMAIN
 generate_certificate $PWD $DOMAIN
-certificate_info $PWD/$DOMAIN.cer
-list_permissions "$PWD/$DOMAIN.csr $PWD/$DOMAIN.cer $PWD/$DOMAIN.key"
+
+# Output certificate info
+certificate_info $PWD/$DOMAIN/cert.pem
+list_permissions "$PWD/$DOMAIN/cert.csr $PWD/$DOMAIN/cert.pem $PWD/$DOMAIN/privkey.pem"
 
 echo "Certificate generated!"
-echo "🍻"

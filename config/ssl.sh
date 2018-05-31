@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 COUNTRY_CODE="UT"
 LOCALITY="Utopia"
