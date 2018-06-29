@@ -25,12 +25,11 @@ function certificate_info {
 
 # Generates an RSA private key
 # $1 -> output path
-# $2 -> domain name
 #
 function generate_rsa_key {
   printf "${WHITE}⦿${NC} Generating RSA private key "
-  openssl genrsa -out $1/$2/privkey.pem 1024 > /dev/null 2>&1
-  assert_file "$1/$2/privkey.pem"
+  openssl genrsa -out $1/privkey.pem 1024 > /dev/null 2>&1
+  assert_file "$1/privkey.pem"
 }
 
 # Create Certificate Signing Request
@@ -41,12 +40,12 @@ function generate_csr {
   printf "${WHITE}⦿${NC} Generating Certificate Signing Request ";
   openssl req \
     -new \
-    -key $1/$2/privkey.pem \
-    -out $1/$2/cert.csr \
+    -key $1/privkey.pem \
+    -out $1/cert.csr \
     -subj "/C=$COUNTRY_CODE/ST=$STATE/L=$LOCALITY/O=$COMPANY/CN=$2" \
       > /dev/null 2>&1
 
-  assert_file "$1/$2/cert.csr"
+  assert_file "$1/cert.csr"
 }
 
 # Generates the certificate
@@ -65,9 +64,9 @@ function generate_certificate {
     -newkey rsa:2048 \
     -x509 \
     -nodes \
-    -keyout $1/$2/privkey.pem \
+    -keyout $1/privkey.pem \
     -new \
-    -out $1/$2/cert.pem \
+    -out $1/cert.pem \
     -subj "/C=$COUNTRY_CODE/ST=$STATE/L=$LOCALITY/O=$COMPANY/CN=$2" \
     -reqexts SAN \
     -extensions SAN \
@@ -79,7 +78,7 @@ function generate_certificate {
   # Remove the temporary config file
   rm $TMP_OPENSSL_CONFIG
 
-  assert_file "$1/$2/cert.pem"
+  assert_file "$1/cert.pem"
 }
 
 # Lists file permissions for files generated
@@ -96,6 +95,14 @@ function list_permissions {
 # Show usage information
 #
 function usage {
-  echo 'Usage: ./selfsign <domain_name>';
+  cat << EOF
+This utility helps generating a self-signed certificates with a single command.
+Usage: ./selfsign <domain_name> [arguments]
+
+Arguments:
+  -h --help : Show usage information
+  -o --out  : Optional path where certificates are to be created. Defaults to CWD.
+
+EOF
   exit 0;
 }

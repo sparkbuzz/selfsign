@@ -29,7 +29,9 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-mkdir -p "${OUT_PATH}/${DOMAIN}"
+if [ ! -d ${OUT_PATH} ]; then
+  mkdir -p "${OUT_PATH}"
+fi
 
 # Generate RSA key -> CSR -> Certificate
 generate_rsa_key ${OUT_PATH} ${DOMAIN}
@@ -37,7 +39,7 @@ generate_csr ${OUT_PATH} ${DOMAIN}
 generate_certificate ${OUT_PATH} ${DOMAIN}
 
 # Output certificate info
-certificate_info ${OUT_PATH}/${DOMAIN}/cert.pem
-list_permissions "$OUT_PATH/$DOMAIN/cert.csr $OUT_PATH/$DOMAIN/cert.pem $OUT_PATH/$DOMAIN/privkey.pem"
+certificate_info ${OUT_PATH}/cert.pem
+list_permissions "$OUT_PATH/cert.csr $OUT_PATH/cert.pem $OUT_PATH/privkey.pem"
 
 echo "Certificate generated!"

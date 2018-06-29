@@ -26,13 +26,16 @@ on MacOS. Checkout this repository and symlink
 
 # Usage
 
-To use, change into the folder where you would like to generate the certificate, and run 
+For usage information run
 
-`selfsign mysitename.localhost`
+`selfsign --help`
 
-This will generate three files in the current path:
+To generate a certificate run 
+
+`selfsign mysitename.localhost --out /path/to/output`
+
+This will generate three files in the given path:
   - mysitename.localhost.csr
   - mysitename.localhost.cer
   - mysitename.localhost.key
 
-Next, setup Nginx/Apache or whichever web server you are using, to serve files using the generated certificate.
