@@ -7,24 +7,37 @@ else
   SCRIPT_PATH="$(dirname "$(readlink -f "$0")")" # Linux etc.
 fi
 
-source $SCRIPT_PATH/../config/color.sh
-source $SCRIPT_PATH/../config/ssl.sh
-source $SCRIPT_PATH/../lib/functions.sh
+source ${SCRIPT_PATH}/../config/color.sh
+source ${SCRIPT_PATH}/../config/ssl.sh
+source ${SCRIPT_PATH}/../lib/functions.sh
 
-# Show usage info when no arguments are set
-[ $# -ne 1 ] && usage
+# Show usage info with no args or -h or --help
+[[ $# -eq 0 || $1 =~ ^-h$|^--help$ ]] && usage
 
-DOMAIN=$1
+OUT_PATH="$PWD"
+DOMAIN=$1; shift
 
-mkdir -p "${PWD}/${DOMAIN}"
+while [ $# -gt 0 ]; do
+  key="$1"
+  case $key in
+    -o|--out)
+      OUT_PATH="$2"; shift 2;;
+    *)
+      echo "Unknown argument $1";
+      exit 1;
+      ;;
+  esac
+done
+
+mkdir -p "${OUT_PATH}/${DOMAIN}"
 
 # Generate RSA key -> CSR -> Certificate
-generate_rsa_key $PWD $DOMAIN
-generate_csr $PWD $DOMAIN
-generate_certificate $PWD $DOMAIN
+generate_rsa_key ${OUT_PATH} ${DOMAIN}
+generate_csr ${OUT_PATH} ${DOMAIN}
+generate_certificate ${OUT_PATH} ${DOMAIN}
 
 # Output certificate info
-certificate_info $PWD/$DOMAIN/cert.pem
-list_permissions "$PWD/$DOMAIN/cert.csr $PWD/$DOMAIN/cert.pem $PWD/$DOMAIN/privkey.pem"
+certificate_info ${OUT_PATH}/${DOMAIN}/cert.pem
+list_permissions "$OUT_PATH/$DOMAIN/cert.csr $OUT_PATH/$DOMAIN/cert.pem $OUT_PATH/$DOMAIN/privkey.pem"
 
 echo "Certificate generated!"

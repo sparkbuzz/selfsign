@@ -28,7 +28,7 @@ function certificate_info {
 # $2 -> domain name
 #
 function generate_rsa_key {
-  printf "${WHITE}⦿${NC} Generating RSA private key"
+  printf "${WHITE}⦿${NC} Generating RSA private key "
   openssl genrsa -out $1/$2/privkey.pem 1024 > /dev/null 2>&1
   assert_file "$1/$2/privkey.pem"
 }
