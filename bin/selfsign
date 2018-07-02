@@ -12,7 +12,7 @@ source ${SCRIPT_PATH}/../config/ssl.sh
 source ${SCRIPT_PATH}/../lib/functions.sh
 
 # Show usage info with no args or -h or --help
-[[ $# -eq 0 || $1 =~ ^-h$|^--help$ ]] && usage
+[[ $# -eq 0 || $1 =~ "-h" || $1=="--help" ]] && usage
 
 OUT_PATH="$PWD"
 DOMAIN=$1; shift
