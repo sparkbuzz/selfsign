@@ -12,14 +12,18 @@ source ${SCRIPT_PATH}/../config/ssl.sh
 source ${SCRIPT_PATH}/../lib/functions.sh
 
 # Show usage info with no args or -h or --help
-[[ $# -eq 0 || $1 =~ "-h" || $1=="--help" ]] && usage
+[[ $# -eq 0 || $1 == "-h" || $1 == "--help" ]] && usage
 
+# Output path is current working directory by default
 OUT_PATH="$PWD"
+
+# First (unnamed) argument is the domain
 DOMAIN=$1; shift
 
+# Resolve any remaining arguments
 while [ $# -gt 0 ]; do
   key="$1"
-  case $key in
+  case $key in  
     -o|--out)
       OUT_PATH="$2"; shift 2;;
     *)
