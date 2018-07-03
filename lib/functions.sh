@@ -17,10 +17,10 @@ function assert_file {
 #
 function certificate_info {
   openssl x509 -text -noout -in $1 | \
-    grep --color=auto -E 'Subject:|DNS:' | \
+    grep -E 'Subject:|DNS:' | \
     sed 's|^[ \t]*| |g' | \
-    sed "s|Subject:|$(echo $GREEN' Subject :'$GRAY)|" | \
-    sed "s|DNS:|$(echo $GREEN' DNS     :'$GRAY) |"
+    sed "s|Subject:|$(echo ' Subject :')|" | \
+    sed "s|DNS:|$(echo ' DNS     :') |"
 }
 
 # Generates an RSA private key
