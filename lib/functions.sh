@@ -17,7 +17,7 @@ function assert_file {
 #
 function certificate_info {
   openssl x509 -text -noout -in $1 | \
-    grep -E 'Subject:|DNS:' | \
+    grep --color=auto -E 'Subject:|DNS:' | \
     sed 's|^[ \t]*| |g' | \
     sed "s|Subject:|$(echo $GREEN' Subject :'$GRAY)|" | \
     sed "s|DNS:|$(echo $GREEN' DNS     :'$GRAY) |"
